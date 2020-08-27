@@ -17,15 +17,11 @@ namespace SportItem.Installers
                     configuration.GetConnectionString("DefaultConnection")));
 
 
-            services.AddDbContext<DataContext>(options =>
-              options.UseSqlServer(
-                  configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<DataContext>();
+            //services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            //    .AddEntityFrameworkStores<DataContext>();
+
             services.AddControllers();
-            services.AddSwaggerGen(x =>
-            { x.SwaggerDoc("v1", new OpenApiInfo { Title = "SportItem API", Version = "v1" }); }
-            );
+         
 
              services.AddDefaultIdentity<IdentityUser>()
                 .AddRoles<IdentityRole>()

@@ -16,6 +16,12 @@ using SportItem.Option;
 using Microsoft.OpenApi.Models;
 using SportItem.Installers;
 using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore;
+using APITestAtul.swagger;
+using APITestAtul.Domain;
+using System.Reflection;
+using System.IO;
 
 namespace SportItem
 {
@@ -33,6 +39,63 @@ namespace SportItem
         {
             services.InstallServicesInAssembly(Configuration);
             services.AddAutoMapper(typeof(Startup));
+            services.AddApiVersioning();
+
+            services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1",
+                    new OpenApiInfo
+                    {
+                        Version = "v1",
+                        Title = "v1 API",
+                        Description = "v1 API Description"
+                    });
+
+                // Add a SwaggerDoc for v2 
+                options.SwaggerDoc("v2",
+                    new OpenApiInfo
+                    {
+                        Version = "v2",
+                        Title = "v2 API",
+                        Description = "v2 API Description"
+                    });
+
+                // Apply the filters
+                options.OperationFilter<RemoveVersionFromParameter>();
+                options.DocumentFilter<ReplaceVersionWithExactValueInPath>();
+                // Set the comments path for the Swagger JSON and UI.
+                //var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                //var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                //options.IncludeXmlComments(xmlPath);
+
+                var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                //var commentsFileName = Assembly.GetExecutingAssembly().GetName().Name + ".XML";
+                var commentsFileName = "Comments" + ".XML";
+                var commentsFile = Path.Combine(baseDirectory, commentsFileName);
+
+               //options.IncludeXmlComments(commentsFile);
+
+                //  options.EnableAnnotations();
+
+                //// Ensure the routes are added to the right Swagger doc
+                //options.DocInclusionPredicate((version, desc) =>
+                //{
+                //    var versions = desc.ControllerAttributes()
+                //        .OfType<ApiVersionAttribute>()
+                //        .SelectMany(attr => attr.Versions);
+
+                //    var maps = desc.ActionAttributes()
+                //        .OfType<MapToApiVersionAttribute>()
+                //        .SelectMany(attr => attr.Versions)
+                //        .ToArray();
+
+                //    return versions.Any(v => $"v{v.ToString()}" == version)
+                //                  && (!maps.Any() || maps.Any(v => $"v{v.ToString()}" == version)); ;
+                //});
+
+            });
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -52,19 +115,23 @@ namespace SportItem
 
             app.UseRouting();
 
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
-            var swaggerOptions = new SwaggerOptions();
-            Configuration.GetSection(nameof(SwaggerOptions)).Bind(swaggerOptions);
+            //var swaggerOptions = new SwaggerOptions();
+            //Configuration.GetSection(nameof(SwaggerOptions)).Bind(swaggerOptions);
 
-            app.UseSwagger(option => { option.RouteTemplate = swaggerOptions.JsonRoute; });
+            app.UseSwagger();
 
-            app.UseSwaggerUI(option =>
+        
+            app.UseSwaggerUI(c =>
             {
-                option.SwaggerEndpoint(swaggerOptions.UiEndpoint, swaggerOptions.Description);
+                c.SwaggerEndpoint($"/swagger/v1/swagger.json", $"v1");
+                // Specify and endpoint for v2
+                c.SwaggerEndpoint($"/swagger/v2/swagger.json", $"v2");
             });
 
+           
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
@@ -72,11 +139,25 @@ namespace SportItem
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            
+
+            //app.UseMvc(routeBuilder =>
+            //{
+            //    routeBuilder.Select().Filter();
+            //    routeBuilder.MapODataServiceRoute("odata", "odata", GetEdmModel());
+            //});
+
             //app.UseAuthentication();
             //app.UseAuthorization();
 
 
         }
+
+        //IEdmModel GetEdmModel()
+        //{
+        //    var odataBuilder = new ODataConventionModelBuilder();
+        //    odataBuilder.EntitySet<Student>("Students");
+
+        //    return odataBuilder.GetEdmModel();
+        //}
     }
 }

@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Text;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +22,6 @@ namespace SportItem.Installers
              
                 .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
-       
         }
     }
 }
